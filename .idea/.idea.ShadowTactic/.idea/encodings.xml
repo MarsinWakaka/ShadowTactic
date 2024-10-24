@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" addBOMForNewFiles="with BOM under Windows, with no BOM otherwise">
+    <file url="file://$PROJECT_DIR$/Assets/Scripts/Charactor/Player/Player.cs" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/Assets/Scripts/DialogSystem/DialogueManager.cs" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/Assets/Scripts/GameItem/FlyingObj.cs" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/Assets/Scripts/Utilities/GameManager.cs" charset="GBK" />
+    <file url="PROJECT" charset="GBK" />
+  </component>
+</project>
