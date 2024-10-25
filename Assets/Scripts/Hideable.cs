@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Characters.Player;
+using Characters.Player.MonkNinja;
 using UnityEngine;
 
 public class Hideable : MonoBehaviour
@@ -19,7 +21,7 @@ public class Hideable : MonoBehaviour
             //    StartCoroutine(coolDown());
             //}
             GameObject player = collision.gameObject;
-            player.GetComponent<Player>().TryHide();
+            player.GetComponent<BasePlayer>().TryHide();
         }
     }
 
@@ -28,7 +30,7 @@ public class Hideable : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             GameObject player = collision.gameObject;
-            player.GetComponent<Player>().CancelHideStateWithRefresh();
+            player.GetComponent<BasePlayer>().CancelHideStateWithRefresh();
         }
     }
 

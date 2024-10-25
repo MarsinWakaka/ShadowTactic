@@ -1,45 +1,56 @@
-using Cinemachine;
 using System.Collections;
+using Cinemachine;
 using UnityEngine;
+using Utilities;
 
-public class CameraController : MonoBehaviour
+namespace Universal
 {
-    public float zoomSpeed = 1.0f;
-    public float maxZoomDistance = 10.0f;
-
-    public CinemachineVirtualCamera virtualCamera;
-    private float DistanceSum;
-
-    Coroutine _coroutine;
-
-    private void Start()
+    public class CameraController : MonoBehaviour
     {
-        DistanceSum = maxZoomDistance + virtualCamera.m_Lens.OrthographicSize;//总和
-    }
+        public float zoomSpeed = 1.0f;
+        public float maxZoomDistance = 10.0f;
+        [Header("虚拟相机方案")]
+        public CinemachineVirtualCamera virtualCamera;
+        // [Header("硬跟踪方案")]
+        // private Transform _mainCamera;
+        // private Transform _playerTrans;
+        // private Vector3 _offset = Vector3.back * 10;
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Q))
+        private void Start()
         {
-            if(_coroutine == null)
-                _coroutine = StartCoroutine(ZoomOutCamera());
+            _distanceSum = maxZoomDistance + virtualCamera.m_Lens.OrthographicSize;//总和
+            virtualCamera.Follow = GameManager.Instance.GetPlayer().transform;
+            // _mainCamera = Camera.main.transform;
+            // _playerTrans = GameManager.Instance.GetPlayer().transform;
         }
-    }
 
-    private IEnumerator ZoomOutCamera()
-    {
-        float targetDistance = DistanceSum - virtualCamera.m_Lens.OrthographicSize;
-
-        float initialDistance = virtualCamera.m_Lens.OrthographicSize;
-        float timer = 0;
-
-        while (timer < 1f)
+        private void Update()
         {
-            timer += Time.deltaTime * zoomSpeed;
-            float newDistance = Mathf.Lerp(initialDistance, targetDistance, timer);
-            virtualCamera.m_Lens.OrthographicSize = newDistance;
-            yield return null;
+            // _mainCamera.position = _playerTrans.position + _offset;
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                if(_coroutine == null)
+                    _coroutine = StartCoroutine(ZoomOutCamera());
+            }
         }
-        _coroutine = null;
+
+        Coroutine _coroutine;
+        private float _distanceSum;
+        private IEnumerator ZoomOutCamera()
+        {
+            float targetDistance = _distanceSum - virtualCamera.m_Lens.OrthographicSize;
+
+            float initialDistance = virtualCamera.m_Lens.OrthographicSize;
+            float timer = 0;
+
+            while (timer < 1f)
+            {
+                timer += Time.deltaTime * zoomSpeed;
+                float newDistance = Mathf.Lerp(initialDistance, targetDistance, timer);
+                virtualCamera.m_Lens.OrthographicSize = newDistance;
+                yield return null;
+            }
+            _coroutine = null;
+        }
     }
 }

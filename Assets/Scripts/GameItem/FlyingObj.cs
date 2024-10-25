@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using Universal.HealthSystem;
 
 public class FlyingObj : MonoBehaviour
 {
@@ -53,6 +54,6 @@ public class FlyingObj : MonoBehaviour
 
     public virtual void CauseDamage(HealthController hc)
     {
-        hc.Hurt(damage);
+        hc.TryTakeDamage(damage);
     }
 }

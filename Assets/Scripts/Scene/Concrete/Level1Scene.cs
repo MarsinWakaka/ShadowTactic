@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Utilities;
 
 public class Level1Scene : SceneState
 {
@@ -27,6 +28,7 @@ public class Level1Scene : SceneState
         //}
         SceneManager.LoadScene(sceneName);
         SceneManager.sceneLoaded += SceneLoaded;
+        
     }
 
     public override void OnExit()
@@ -47,5 +49,6 @@ public class Level1Scene : SceneState
 
         //场景加载完毕后进入对话系统
         //panelManager.Push(new DialogPanel());
+        GameManager.Instance.StartNewSceneAction();
     }
 }

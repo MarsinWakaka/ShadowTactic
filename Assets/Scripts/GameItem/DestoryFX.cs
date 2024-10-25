@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
+using Universal.AudioSystem;
+using Utilities;
 
 public class DestoryFX : MonoBehaviour
 {
@@ -17,10 +19,10 @@ public class DestoryFX : MonoBehaviour
 
     //Coroutine coroutine;
 
-    private void Start()
+    private void OnEnable()
     {
         sr = Item.GetComponent<SpriteRenderer>();
-        /*coroutine = */StartCoroutine(HighLight());
+        StartCoroutine(HighLight());
     }
 
     IEnumerator HighLight()
@@ -32,7 +34,7 @@ public class DestoryFX : MonoBehaviour
         }
     }
 
-    public void Destory()
+    public void DestroyItem()
     {
         StopCoroutine(HighLight());
 

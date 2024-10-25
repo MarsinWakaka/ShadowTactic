@@ -2,6 +2,7 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using Universal.HealthSystem;
 using static Unity.VisualScripting.Member;
 
 public class DeadZone : MonoBehaviour
@@ -10,7 +11,7 @@ public class DeadZone : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            collision.gameObject.GetComponent<HealthController>().Hurt(9999);
+            collision.gameObject.GetComponent<HealthController>().TryTakeDamage(9999);
         }
     }
 }

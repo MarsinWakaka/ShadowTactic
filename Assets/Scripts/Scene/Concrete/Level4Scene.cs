@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Utilities;
 
 public class Level4Scene : SceneState
 {
@@ -37,5 +38,6 @@ public class Level4Scene : SceneState
 
         //场景加载完毕后进入对话系统
         //panelManager.Push(new DialogPanel());
+        GameManager.Instance.StartNewSceneAction();
     }
 }

@@ -1,6 +1,7 @@
 public enum actionType
 {
-    idle, walk, run, attack1, attack2, attack3, shoot, skill, defence, jump, fall, hurt, dead, touchGround,
+    idle, walk, run, attack1, attack2, attack3, shoot, skill, defence, jump, fall, hurt,stiff, dead, touchGround, antiAttack,
+    defenceSuccess
 }
 
 //precast允许提前打断动作
@@ -9,10 +10,10 @@ public enum actionType
 //animEnd负责意味着的结束，自行对状态的切换
 public enum AnimationStage
 {
-    precastEnd, typeAhead, nextStageReady, animEnd, checkHit, stopCheckHit, nextStageEnd,
+    precastEnd, typeAhead, NextStageReady, AnimEnd, SetCheckPointLeftBorder, SetCheckPointRightBorder, nextStageEnd,
 }
 
-public enum actionAudio
+public enum ActionAudio
 {
     idle, walk, run, attack1, attack2, attack3, sheath, bow, shoot, skill, defence, jump, fall, touchground, hurt, dead,
 }
@@ -24,7 +25,7 @@ public interface IState
     void OnExit();
 }
 
-public enum StepAudio
+public enum FootStepAudioType
 {
-    Shuye, HardGround, Water
+    Leaves, HardSurface, Water
 }

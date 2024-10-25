@@ -1,294 +1,342 @@
-using System;
 using System.Collections;
+using Characters.Player;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Universal.AudioSystem;
 
-public class GameManager : MonoBehaviour
+namespace Utilities
 {
-    private static GameManager _instance;
-    public static GameManager Instance => _instance;
-
-    public int TargetFrameRate = 60;
-
-    private int frameCount;
-    private float deltaTime;
-    private float updateRate = 0.5f; // 更新帧率的频率
-
-    [SerializeField] Image BlackBG;
-
-    #region 分数系统
-
-    private int LastScore;
-    private int Score;
-    [SerializeField] Transform ScoreSystem;
-
-    private Image ScoreBG;
-    private TextMeshProUGUI ScoreText;
-
-    [Header(" ————————效果参数—————————")] [SerializeField]
-    float FontSizeMultipler;
-
-    Color OriginalColor;
-    [SerializeField] Color EffectColor;
-    private float fontScale;
-    private float finalFontScale;
-
-    private float scoreTimer;
-    [SerializeField] float scoreTransitTime;
-    Coroutine UIcoroutinue;
-
-    #endregion
-
-    //全局变量
-    float sinValueByTime;
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        _instance = this;
-    }
-
-    private void Start()
-    {
-        SetFrameRate(TargetFrameRate);
-        SoundManager.Instance.PlayBGM();
-        //StartCoroutine(UpdateFramerate());
-
-        if (ScoreSystem != null)
+        private static GameManager instance;
+        public static GameManager Instance
         {
-            ScoreBG = ScoreSystem.GetComponentInChildren<Image>();
-            ScoreText = ScoreSystem.GetComponentInChildren<TextMeshProUGUI>();
-            OriginalColor = ScoreBG.color;
-            fontScale = ScoreText.fontSize;
-            finalFontScale = fontScale * FontSizeMultipler;
-
-            if (BlackBG != null)
+            get
             {
-                if (!BlackBG.enabled)
-                    BlackBG.enabled = true;
-                StartSceneFX();
+                if (instance == null)
+                {
+                    instance = FindObjectOfType<GameManager>();
+                }
+                if (instance == null)
+                {
+                    GameObject go = new GameObject("GameManager");
+                    instance = go.AddComponent<GameManager>();
+                }
+                return instance;
             }
         }
-    }
 
-    private void Update()
-    {
-        sinValueByTime = Mathf.Sin(Time.time * 2);
-    }
+        public static bool IsInstanceNull() => instance == null;
 
-    void StartSceneFX()
-    {
-        if (BlackBG != null)
-            StartCoroutine(SceneLoadedFX());
-    }
+        public int targetFrameRate = 60;
 
-    private IEnumerator SceneLoadedFX()
-    {
-        float timer = 0;
-        float maxTime = 2;
-        float rate;
-        while (timer < maxTime)
+        /// <summary>
+        /// 游戏结束时的黑色背景
+        /// </summary>
+        private Image _blackBg;
+
+        #region 分数系统
+        private int _lastScore;
+        private int _score;
+        private Transform _scoreSystem;
+        private Image _scoreBg;
+        private TextMeshProUGUI _scoreText;
+
+        [Header(" ————————效果参数—————————")] 
+        private Color _originalColor;
+        [SerializeField] Color EffectColor;
+        private readonly float _fontSizeMultipler = 1.2f;
+        private float _fontScale = 72;
+        private float _finalFontScale;
+        private float _scoreTimer;
+        private readonly float _scoreTransitTime = 2f;
+        Coroutine UIcoroutinue;
+
+        #endregion
+
+        //全局变量
+        float sinValueByTime;
+    
+        private GameObject _player;
+        public GameObject GetPlayer()
         {
-            timer += Time.deltaTime;
-            rate = (maxTime - timer) / maxTime;
-            BlackBG.color = new Vector4(0, 0, 0, rate);
-            yield return null;
+            if (_player == null) _player = GameObject.FindWithTag("Player");
+            return _player;
         }
-    }
-
-    public void AddScore(int score)
-    {
-        LastScore = Score;
-        Score += score;
-        UpdateUI();
-    }
-
-    public void ClearScore()
-    {
-        LastScore = Score = 0;
-        UpdateUI();
-    }
-
-    void UpdateUI()
-    {
-        if (UIcoroutinue == null)
+    
+        private void Awake()
         {
-            UIcoroutinue = StartCoroutine(AddScoreFX());
+            if (instance == null)
+            {
+                instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+            
+            SetFrameRate(targetFrameRate);
         }
-        else
+
+        private void Start()
         {
-            StopCoroutine(UIcoroutinue);
+            SoundManager.Instance.PlayBGM();
+        }
+
+        private int _frameRate;
+        private int _frameCount;
+        private float _accTime;
+
+        private void Update()
+        {
+            sinValueByTime = Mathf.Sin(Time.time * 2);
+        
+            _frameCount++;
+            _accTime += Time.deltaTime;
+            if (_accTime > 1)
+            {
+                _frameRate = _frameCount;
+                _accTime = 0;
+                _frameCount = 0;
+            }
+        }
+    
+        // 通过OnGUI显示帧率, 要求字体清晰，有背景
+        private void OnGUI()
+        {
+            GUIStyle style = new GUIStyle();
+            style.fontSize = 15;
+            style.normal.textColor = new Color(0.11f, 0.36f, 0.06f);
+            GUI.Label(new Rect(5, 5, 100, 100), $"FPS: {_frameRate}", style);
+        }
+
+
+        public void AddScore(int score)
+        {
+            _lastScore = _score;
+            _score += score;
+            UpdateScoreUI();
+        }
+
+        private void InitScoreSystemUI()
+        {
+            var scoreGo = GameObject.Find("ScoreSystem");
+            if (scoreGo != null)
+            {
+                _scoreSystem = scoreGo.transform;
+                _scoreBg = _scoreSystem.GetComponentInChildren<Image>();
+                _scoreText = _scoreSystem.GetComponentInChildren<TextMeshProUGUI>();
+                _originalColor = _scoreBg.color;
+                _fontScale = _scoreText.fontSize;
+                _finalFontScale = _fontScale * _fontSizeMultipler;
+            }
+        }
+
+        private void UpdateScoreUI()
+        {
+            if (_scoreSystem == null) InitScoreSystemUI();
+            if (_scoreSystem == null) return;
+            
+            if (UIcoroutinue == null)
+            {
+                UIcoroutinue = StartCoroutine(AddScoreFX());
+            }
+            else
+            {
+                StopCoroutine(UIcoroutinue);
+                ResetUI();
+                UIcoroutinue = StartCoroutine(AddScoreFX());
+            }
+
+            _scoreText.text = _score.ToString();
+        }
+
+        private IEnumerator AddScoreFX()
+        {
+            float rate;
+            // float value;
+            _scoreTimer = 0f;
+            while (_scoreTimer < _scoreTransitTime)
+            {
+                rate = _scoreTimer / _scoreTransitTime;
+                _scoreText.text = Mathf.RoundToInt(Mathf.Lerp(_lastScore, _score, rate)).ToString();
+                _scoreText.fontSize = Mathf.Lerp(_finalFontScale, _fontScale, rate);
+                // value = Mathf.Lerp(0, 1, rate);
+                if (_scoreBg != null) _scoreBg.color = MyMath.Lerp(EffectColor, _originalColor, rate);
+                _scoreTimer += Time.deltaTime;
+                yield return null;
+            }
+
+            _scoreText.text = _score.ToString();
+            UIcoroutinue = null;
             ResetUI();
-            UIcoroutinue = StartCoroutine(AddScoreFX());
         }
 
-        ScoreText.text = Score.ToString();
-    }
-
-    IEnumerator AddScoreFX()
-    {
-        float rate;
-        float value;
-        scoreTimer = 0f;
-        while (scoreTimer < scoreTransitTime)
+        private void ResetUI()
         {
-            rate = scoreTimer / scoreTransitTime;
-            ScoreText.text = Mathf.RoundToInt(Mathf.Lerp(LastScore, Score, rate)).ToString();
-            ScoreText.fontSize = Mathf.Lerp(finalFontScale, fontScale, rate);
-            value = Mathf.Lerp(0, 1, rate);
-            //ScoreBG.color = new Color(1, value, value, 1);
-            ScoreBG.color = MyMath.Lerp(EffectColor, OriginalColor, rate);
-
-            scoreTimer += Time.deltaTime;
-            yield return null;
-
-            //Debug.Log($"{DateTime.Now}更新中,Score:{ScoreText.text}");
+            _scoreText.fontSize = _fontScale;
+            if (_scoreBg != null) _scoreBg.color = _originalColor;
+        }
+        
+        /// <summary>
+        /// 每当场景被加载时，调用此方法
+        /// </summary>
+        public void StartNewSceneAction()
+        {
+            if (_blackBg == null) _blackBg = GameObject.Find("BlackBackGround").GetComponent<Image>();
+            if (_blackBg != null) StartCoroutine(SceneLoadedFX());
         }
 
-        ScoreText.text = Score.ToString();
-        UIcoroutinue = null;
-        ResetUI();
-    }
-
-    private void ResetUI()
-    {
-        ScoreText.fontSize = fontScale;
-        if (ScoreBG != null)
-            ScoreBG.color = OriginalColor;
-    }
-
-    public void NextScene()
-    {
-        SoundManager.Instance.PlayNextLevelSFX();
-        StopAllCoroutines();
-        StartCoroutine(LoadNextScene());
-    }
-
-    private IEnumerator LoadNextScene()
-    {
-        float timer = 0;
-        float rate = 0;
-        //gameObject.GetComponent<Volume>().vi
-        while (timer < 3)
+        private IEnumerator SceneLoadedFX()
         {
-            timer += Time.deltaTime;
-            rate = timer / 3;
-            BlackBG.color = new Vector4(0, 0, 0, rate);
-            yield return null;
-        }
-
-
-        int index = (SceneManager.GetActiveScene().buildIndex + 1) % SceneManager.sceneCountInBuildSettings;
-        switch (index)
-        {
-            case 0:
-                GameRoot.Instance.SceneSystem.SetScene(new StartScene());
-                break;
-            case 1:
-                GameRoot.Instance.SceneSystem.SetScene(new Level1Scene());
-                break;
-            case 2:
-                GameRoot.Instance.SceneSystem.SetScene(new Level2Scene());
-                break;
-            case 3:
-                GameRoot.Instance.SceneSystem.SetScene(new Level3Scene());
-                break;
-            case 4:
-                GameRoot.Instance.SceneSystem.SetScene(new Level4Scene());
-                break;
-        }
-    }
-
-    public void GameRestart()
-    {
-        int index = SceneManager.GetActiveScene().buildIndex;
-        switch (index)
-        {
-            case 0:
-                GameRoot.Instance.SceneSystem.SetScene(new StartScene());
-                break;
-            case 1:
-                GameRoot.Instance.SceneSystem.SetScene(new Level1Scene());
-                break;
-            case 2:
-                GameRoot.Instance.SceneSystem.SetScene(new Level2Scene());
-                break;
-            case 3:
-                GameRoot.Instance.SceneSystem.SetScene(new Level3Scene());
-                break;
-            case 4:
-                GameRoot.Instance.SceneSystem.SetScene(new Level4Scene());
-                break;
-        }
-    }
-
-    public void SetFrameRate(int rate)
-    {
-        TargetFrameRate = rate;
-        Application.targetFrameRate = TargetFrameRate;
-    }
-
-    private IEnumerator UpdateFramerate()
-    {
-        while (true)
-        {
-            yield return new WaitForEndOfFrame();
-
-            frameCount++;
-            deltaTime += Time.unscaledDeltaTime;
-
-            if (deltaTime > updateRate)
+            float timer = 0;
+            float maxTime = 2;
+            float rate;
+            while (timer < maxTime)
             {
-                float framerate = frameCount / deltaTime;
-                Debug.Log("Current framerate: " + framerate.ToString("F2"));
-
-                frameCount = 0;
-                deltaTime -= updateRate;
+                timer += Time.deltaTime;
+                rate = (maxTime - timer) / maxTime;
+                _blackBg.color = new Vector4(0, 0, 0, rate);
+                yield return null;
             }
         }
-    }
+        
+        /// <summary>
+        /// 要想加载下一关时，调用此方法
+        /// </summary>
+        public void ToLoadNextScene()
+        {
+            if (_blackBg == null) 
+                _blackBg = GameObject.Find("BlackBackGround").GetComponent<Image>();
+            
+            SoundManager.Instance.PlayNextLevelSFX();
+            StopAllCoroutines();
+            StartCoroutine(LoadNextSceneCoroutine());
+        }
 
-    // 游戏结束
-    internal static void GameOver()
-    {
-        // 通知各个敌人恢复idle状态
-        GameRoot.Instance.Push(new DeadPanel());
-    }
+        private IEnumerator LoadNextSceneCoroutine()
+        {
+            float timer = 0;
+            float rate = 0;
+            _blackBg.enabled = true;
+            //gameObject.GetComponent<Volume>().vi
+            while (timer < 3)
+            {
+                timer += Time.deltaTime;
+                rate = timer / 3;
+                _blackBg.color = new Vector4(0, 0, 0, rate);
+                yield return null;
+            }
 
-    public void StopGame()
-    {
-        Time.timeScale = 0f;
-        GameObject player = GameObject.Find("Player");
-        player.GetComponent<Player>().m_FSM.CeaseFSM();
-    }
+            int index = (SceneManager.GetActiveScene().buildIndex + 1) % SceneManager.sceneCountInBuildSettings;
+            switch (index)
+            {
+                case 0:
+                    GameRoot.Instance.SceneSystem.SetScene(new StartScene());
+                    break;
+                case 1:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level1Scene());
+                    break;
+                case 2:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level2Scene());
+                    break;
+                case 3:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level3Scene());
+                    break;
+                case 4:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level4Scene());
+                    break;
+            }
+        }
 
-    public void CeaseInput()
-    {
-        GameObject player = GameObject.Find("Player");
-        player.GetComponent<Player>().m_FSM.CeaseFSM();
-    }
+        public void GameRestart()
+        {
+            int index = SceneManager.GetActiveScene().buildIndex;
+            switch (index)
+            {
+                case 0:
+                    GameRoot.Instance.SceneSystem.SetScene(new StartScene());
+                    break;
+                case 1:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level1Scene());
+                    break;
+                case 2:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level2Scene());
+                    break;
+                case 3:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level3Scene());
+                    break;
+                case 4:
+                    GameRoot.Instance.SceneSystem.SetScene(new Level4Scene());
+                    break;
+            }
+        }
 
-    public void StartInput()
-    {
-        GameObject player = GameObject.Find("Player");
-        player.GetComponent<Player>().m_FSM.StartFSM();
-    }
+        public void SetFrameRate(int rate)
+        {
+            targetFrameRate = rate;
+            Application.targetFrameRate = targetFrameRate;
+        }
 
-    public void ContinueGame()
-    {
-        Time.timeScale = 1f;
-        GameObject player = GameObject.Find("Player");
-        player.GetComponent<Player>().m_FSM.StartFSM();
-    }
+        // 游戏结束
+        internal static void GameOver()
+        {
+            // 通知各个敌人恢复idle状态
+            GameRoot.Instance.Push(new DeadPanel());
+        }
 
-    public float SinValueByTime()
-    {
-        return sinValueByTime;
-    }
+        public void StopGame()
+        {
+            Time.timeScale = 0f;
+            _player.GetComponent<BasePlayer>().m_FSM.CeaseFSM();
+        }
 
-    public float SinValueWithNormalize()
-    {
-        return (sinValueByTime + 1) / 2;
+        public void CeaseInput()
+        {
+            _player.GetComponent<BasePlayer>().m_FSM.CeaseFSM();
+        }
+
+        public void StartInput()
+        {
+            _player.GetComponent<BasePlayer>().m_FSM.StartFSM();
+        }
+
+        public void ContinueGame()
+        {
+            Time.timeScale = 1f;
+            _player.GetComponent<BasePlayer>().m_FSM.StartFSM();
+        }
+
+        public float SinValueByTime()
+        {
+            return sinValueByTime;
+        }
+
+        public float SinValueWithNormalize()
+        {
+            return (sinValueByTime + 1) / 2;
+        }
+
+    
+        public GameObject[] players;
+        private int _characterSelectedIndex;
+        public void SetCharacterSelected(int slotIndex)
+        {
+            _characterSelectedIndex = slotIndex;
+        }
+    
+        private string ninjaPath = "Prefabs/Characters/MonkNinja";
+        private string samuraiPath = "Prefabs/Characters/SamuraiMarsin";
+        
+        public void CreatePlayer(Vector2 position)
+        {
+            if (_player != null) Destroy(_player);
+            var playerLoaded = Resources.Load<GameObject>(_characterSelectedIndex == 0 ? ninjaPath : samuraiPath);
+            _player = Instantiate(playerLoaded);
+            _player.transform.position = position;
+        }
     }
 }

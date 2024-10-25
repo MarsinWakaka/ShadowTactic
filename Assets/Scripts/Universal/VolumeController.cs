@@ -1,4 +1,3 @@
-using Assets.Scripts.Universal;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -6,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Utilities;
 
 public class VolumeController : PersistentSingleton<VolumeController>
 {

@@ -1,54 +1,48 @@
 ﻿using System.Collections;
-using System.Threading;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
+using Universal.AudioSystem;
 
-public class StoneDoor : MonoBehaviour
+namespace GameItem
 {
-    private AudioSource source;
-    DestoryFX dfx;
-    [SerializeField] AudioData closeAudio;
-    [SerializeField] AudioData fallingAudio;
-
-    bool isTrigger;
-
-    //Rigidbody2D rg;
-    // Use this for initialization
-    void Start()
+    public class StoneDoor : MonoBehaviour
     {
-        //rg = GetComponent<Rigidbody2D>();
-        dfx = GetComponent<DestoryFX>();
-        source = GetComponent<AudioSource>();
-        dfx.enabled = false;
-    }
+        private AudioSource _source;
+        DestoryFX _dfx;
+        [SerializeField] AudioData closeAudio;
+        [SerializeField] AudioData fallingAudio;
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (isTrigger)
-            return;
-        if (collision.CompareTag("Player"))
+        bool _isTrigger;
+    
+        void Start()
         {
-            SoundManager.Instance.PlaySFX(source, fallingAudio);
-            StartCoroutine(StartFall());
-            isTrigger = true;
-            //this.GetComponent<BoxCollider2D>().enabled = false;
+            _dfx = GetComponent<DestoryFX>();
+            _source = GetComponent<AudioSource>();
+            _dfx.enabled = false;
         }
-    }
 
-    //public void SetDestoryable()
-    //{
-    //    dfx.enabled = true;
-    //}
-
-    IEnumerator StartFall()
-    {
-        float timer = 0;
-        while (timer < 1f)
+        private void OnTriggerEnter2D(Collider2D collision)
         {
-            timer += Time.deltaTime;
-            transform.position -= new Vector3 (0.0f, 1.5f, 0.0f) * Time.deltaTime;
-            yield return null;
+            if (_isTrigger)
+                return;
+        
+            if (collision.CompareTag("Player"))
+            {
+                SoundManager.Instance.PlaySFX(_source, fallingAudio);
+                StartCoroutine(StartFall());
+                _isTrigger = true;
+            }
         }
-        //SoundManager.Instance.PlaySFX(source, closeAudio);
+
+        IEnumerator StartFall()
+        {
+            float timer = 0;
+            while (timer < 1f)
+            {
+                timer += Time.deltaTime;
+                transform.position -= new Vector3 (0.0f, 1.5f, 0.0f) * Time.deltaTime;
+                yield return null;
+            }
+            //SoundManager.Instance.PlaySFX(source, closeAudio);
+        }
     }
 }

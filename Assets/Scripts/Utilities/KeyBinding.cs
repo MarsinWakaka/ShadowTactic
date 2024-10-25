@@ -14,6 +14,7 @@ public class Trigger
     public const string RUN = "Run";
     public const string JUMP = "Jump";
     public const string ATTACK = "Attack";
+    public const string DEFENCE = "Defence";
     public const string SHOOT = "Shoot";
     public const string SKILL = "Skill";
 }
@@ -29,11 +30,14 @@ public class AnimTags
     public const string ATTACK1 = "Attack1";
     public const string ATTACK2 = "Attack2";
     public const string ATTACK3 = "Attack3";
+    public const string ANTI_ATTACK = "AntiAttack";
     public const string ShOOT = "Shoot";
     public const string DEFENCE = "Defence";
+    public const string DEFENCE_SUCCESS = "DefenceSuccess";
     public const string SKILL = "Skill";
     public const string HURT = "Hurt";
-    public const string DEAD = "Dead";
+    public const string STIFF = "Stiff";
+    public const string DIE = "Dead";
 }
 
 public class Tags

@@ -344,7 +344,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 20
-  flySpeed: 12
+  flySpeed: 10
   lifetime: 10
   targetTag: Player
 --- !u!114 &-664627273024877960

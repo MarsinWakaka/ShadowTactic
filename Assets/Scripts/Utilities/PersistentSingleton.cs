@@ -1,19 +1,40 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Assets.Scripts.Universal
+namespace Utilities
 {
     public class PersistentSingleton<T> : MonoBehaviour where T : Component
     {
-        public static T Instance { get; protected set; }
+        // public static T Instance { get; protected set; }
+        private static T _instance;
+        public static T Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindObjectOfType<T>();
+                }
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject(typeof(T).Name);
+                    _instance = go.AddComponent<T>();
+                }
+                return _instance;
+            }
+        }
+        
+        public static bool IsInstanceNull()
+        {
+            return _instance == null;
+        }
 
         protected virtual void Awake()
         {
-            if(Instance == null)
+            if(_instance == null)
             {
-                Instance = this as T;
+                _instance = this as T;
             }
-            else if (Instance != this)
+            else if (_instance != this)
             {
                 Destroy(gameObject);
             }
